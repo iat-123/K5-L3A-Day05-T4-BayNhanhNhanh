@@ -1,6 +1,6 @@
 # Bài nộp LAB5 — T4 Thương mại điện tử · Nhóm [tên nhóm]
 
-**Lớp:** L3A · **Bàn / zone:** Leaner · **Track:** T4 · Thương mại điện tử
+**Lớp:** L3A · **Bàn / zone:** /Leaner · **Track:** T4 · Thương mại điện tử
 
 > Nhóm 4 người — mentor đã cho phép (ghi chú theo bổ sung của mentor trong buổi lab).
 
