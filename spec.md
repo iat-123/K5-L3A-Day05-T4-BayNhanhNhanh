@@ -8,7 +8,7 @@
 |---|---|---|
 | Trần Văn Tài | 2A202603506 | Cầm bút §1–§2 (lát cắt, kịch bản rủi ro), dữ liệu dựng §0; viết `spec.md` §0–§2; bonus: màn người bán + lời gọi AI thật (`server.py`, `chay_log.py`, `ai-log.md`); demo: lát cắt + kịch bản + bonus |
 | Nguyễn Quang Hiệp | 2A202603509 | Cầm bút §3 (khi AI sai); viết `spec.md` §3; câu chữ AI trong prototype, ảnh đánh số; demo: HAX/PAIR |
-| Trần Quốc Tuấn | 2A202603561 | Cầm bút §4, §6 (mức tự chủ, tiêu chí); viết `spec.md` §4–§6, tạo repo; demo: mức tự chủ + ca lạ |
+| Trần Quốc Tuấn | 2A202603561 | Cầm bút §4, §6 (mức tự chủ, tiêu chí); viết `spec.md` §4–§6,; demo: mức tự chủ + ca lạ |
 | Hồ Đức Mạnh | 2A202603609 | Dựng prototype; demo: bấm qua ca khó |
 
 ---
