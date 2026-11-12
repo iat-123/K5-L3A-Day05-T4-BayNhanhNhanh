@@ -1,12 +1,12 @@
 # Bài nộp LAB5 — T4 Thương mại điện tử · Nhóm [tên nhóm]
 
-**Lớp:** ____ · **Bàn / zone:** ____ · **Track:** T4 · Thương mại điện tử
+**Lớp:** L3A · **Bàn / zone:** ____ · **Track:** T4 · Thương mại điện tử
 
 > Nhóm 4 người — mentor đã cho phép (ghi chú theo bổ sung của mentor trong buổi lab).
 
 | Họ và Tên | Mã Học Viên | Việc đã làm |
 |---|---|---|
-| Trần Văn Tài |  | Cầm bút §1–§2 (lát cắt, kịch bản rủi ro), dữ liệu dựng §0; viết `spec.md` §0–§2; demo: lát cắt + kịch bản |
+| Trần Văn Tài | 2A202603506 | Cầm bút §1–§2 (lát cắt, kịch bản rủi ro), dữ liệu dựng §0; viết `spec.md` §0–§2; demo: lát cắt + kịch bản |
 | Nguyễn Quang Hiệp |  | Cầm bút §3 (khi AI sai); viết `spec.md` §3; câu chữ AI trong prototype, ảnh đánh số; demo: HAX/PAIR |
 | Trần Quốc Tuấn |  | Cầm bút §4, §6 (mức tự chủ, tiêu chí); viết `spec.md` §4–§6, tạo repo; demo: mức tự chủ + ca lạ |
 | Hồ Đức Mạnh |  | Dựng prototype; demo: bấm qua ca khó |
