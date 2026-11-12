@@ -8,7 +8,7 @@
 |---|---|---|
 | Trần Văn Tài | 2A202603506 | Cầm bút §1–§2 (lát cắt, kịch bản rủi ro), dữ liệu dựng §0; viết `spec.md` §0–§2; demo: lát cắt + kịch bản |
 | Nguyễn Quang Hiệp | 2A202603509 | Cầm bút §3 (khi AI sai); viết `spec.md` §3; câu chữ AI trong prototype, ảnh đánh số; demo: HAX/PAIR |
-| Trần Quốc Tuấn |  | Cầm bút §4, §6 (mức tự chủ, tiêu chí); viết `spec.md` §4–§6, tạo repo; demo: mức tự chủ + ca lạ |
+| Trần Quốc Tuấn | 2A202603561 | Cầm bút §4, §6 (mức tự chủ, tiêu chí); viết `spec.md` §4–§6, tạo repo; demo: mức tự chủ + ca lạ |
 | Hồ Đức Mạnh | 2A202603609 | Dựng prototype; demo: bấm qua ca khó |
 
 ---
@@ -200,16 +200,163 @@ Nhãn: **nhẹ** (người dùng tự thấy, tự sửa) · **sửa được** 
 
 ---
 
-## §4. Mức tự chủ  (chặng 4)
-Với mỗi tool:
-- Mức của nhóm (tự làm / cần người duyệt / cấm). Nếu cần người duyệt: ai duyệt · người duyệt thấy gì · quá hạn thì sao.
-- Lý do theo cost-of-error: sai thì ai chịu gì · đảo lại được không · chờ người thì mất gì.
-- Phương án đã cân nhắc và vì sao loại.
-Thêm:
-- Tool khó xếp nhất: mỗi người từng chọn gì, cái giá của mỗi phía (trỏ về kịch bản ở §2), nhóm chốt thế nào.
-- Thử mức đã đặt trên 2 kịch bản đắt nhất + 1 kịch bản bình thường: cái sai có bị chặn không? còn việc nào làm khi lẽ ra phải hỏi? người dùng bình thường có phải chờ vô ích không?
-- Luật thêm hoặc tool tách bước (nếu có), và vì sao.
-- Một mức tự chủ đã đổi lời hứa nào với người dùng.
+## §4. Mức tự chủ
+
+### 4.1. Bảng phân quyền các tool
+
+Nhóm phân quyền tool theo mức độ rủi ro và khả năng đảo ngược của hành động:
+
+- 🟢 **Tự làm:** Agent được phép thực hiện khi đáp ứng đủ điều kiện.
+- 🟡 **Cần người duyệt:** Agent chỉ được chuẩn bị hồ sơ hoặc đề xuất; nhân viên có thẩm quyền quyết định.
+- 🔴 **Cấm:** Agent không được phép thực hiện trong luồng xử lý khiếu nại.
+
+| Tool | Chức năng | Mức tự chủ | Điều kiện và giới hạn | Lý do phân quyền |
+|---|---|---|---|---|
+| `tra_cuu_don_hang` | Tra cứu thông tin đơn hàng, ảnh và mô tả sản phẩm tại thời điểm đặt hàng, lịch sử chỉnh sửa mô tả, lịch sử chat của đơn và thời hạn khiếu nại/trả hàng. | 🟢 Tự làm | Backend phải xác minh người dùng có quyền truy cập đơn hàng. Chỉ trả về dữ liệu cần thiết cho việc xử lý khiếu nại; không cung cấp số điện thoại hoặc địa chỉ của bên còn lại. | Nếu không có tool này, Agent có thể đánh giá sai do sử dụng mô tả hiện tại thay vì thông tin tại thời điểm đặt hàng (K1). |
+| `yeu_cau_bang_chung` | Gửi yêu cầu bổ sung bằng chứng cho người mua hoặc người bán. | 🟢 Tự làm | Chỉ sử dụng mẫu yêu cầu trung lập, cố định. Chỉ gửi cho người bán sau khi người mua đã chọn đúng đơn và gửi yêu cầu trả hàng. Nội dung phải nêu rõ thời hạn 48 giờ và bộ căn cứ người mua có thể xem. Backend phải kiểm tra điều kiện gửi và chống gửi trùng bằng `idempotency_key`. | Gửi nhầm yêu cầu có thể gây phiền nhưng rủi ro thấp hơn việc chờ duyệt khiến người mua lỡ thời hạn khiếu nại (K4). |
+| `chuyen_truong_nhom` | Chuyển hồ sơ khiếu nại cho trưởng nhóm xử lý. | 🟢 Tự làm | Agent phải đính kèm lý do chuyển, dữ liệu liên quan và trạng thái hồ sơ. Không tự thay đổi kết luận khiếu nại sau khi chuyển. | Chuyển thừa chỉ làm tăng thời gian xử lý một chút và có thể điều chỉnh lại. |
+| `soan_de_xuat_hoan_tien` | Soạn đề xuất hoàn tiền kèm căn cứ từ hai phía. | 🟢 Tự làm | Chỉ tạo đề xuất, không thực hiện giao dịch tài chính. Phải thể hiện bằng chứng, thông tin còn thiếu và lý do đề xuất. | Việc chuẩn bị hồ sơ có rủi ro thấp; quyền quyết định hoàn tiền vẫn thuộc về nhân viên. |
+| `thuc_hien_hoan_tien` | Thực hiện giao dịch hoàn tiền cho người mua. | 🟡 Cần người duyệt | Chỉ được thực hiện khi có phê duyệt hợp lệ từ trưởng nhóm. Lệnh thực thi phải gắn với `approval_id`, `case_id`, `order_id`, số tiền và người nhận cụ thể. Backend phải xác minh quyền duyệt, trạng thái phê duyệt và chống giao dịch trùng. | Hoàn tiền sai có thể khiến người bán mất tiền và hàng, đồng thời khó thu hồi giao dịch. |
+| `tu_choi_khieu_nai` | Đưa ra quyết định từ chối khiếu nại. | 🟡 Cần người duyệt | Agent chỉ được chuẩn bị đề xuất từ chối và căn cứ. Trưởng nhóm phải xem xét, phê duyệt trước khi quyết định được gửi đến người mua. | Từ chối sai khiến người mua mất quyền lợi. Tool này cần mức kiểm soát tương đương với hoàn tiền để bảo đảm tính trung lập. |
+| `phat_shop` | Trừ uy tín, khóa shop hoặc áp dụng hình thức xử phạt. | 🔴 Cấm | Không được gọi trong luồng Agent xử lý khiếu nại. Nếu phát hiện dấu hiệu hàng giả hoặc vi phạm nghiêm trọng, Agent chuyển trưởng nhóm với nhãn phù hợp để bộ phận chuyên trách xử lý. | Hình phạt có thể ảnh hưởng đến toàn bộ hoạt động kinh doanh của shop và khó đảo ngược. Không nên để Agent khiếu nại tự quyết định xử phạt. |
+
+**Nguyên tắc phân quyền:** Agent được tự động hóa các thao tác thu thập thông tin, chuẩn bị hồ sơ và điều phối. Những quyết định ảnh hưởng trực tiếp đến quyền lợi tài chính của người mua hoặc người bán phải có nhân viên phê duyệt. Các hành động xử phạt shop nằm ngoài phạm vi tự chủ của Agent.
+
+### 4.2. Người duyệt cần nhìn thấy những gì?
+
+Trước khi phê duyệt hoàn tiền hoặc từ chối khiếu nại, trưởng nhóm phải nhìn thấy đầy đủ:
+
+1. Thông tin đơn hàng và trạng thái xử lý hiện tại.
+2. Ảnh, mô tả sản phẩm được lưu tại thời điểm đặt hàng.
+3. Lịch sử chỉnh sửa mô tả, nếu có; phải phân biệt rõ nội dung gốc và nội dung đã chỉnh sửa.
+4. Bằng chứng do người mua cung cấp.
+5. Phản hồi và bằng chứng từ người bán; nếu người bán không phản hồi sau 48 giờ thì ghi rõ trạng thái không phản hồi.
+6. Đề xuất của Agent, căn cứ đưa ra đề xuất và những thông tin còn thiếu.
+7. Lịch sử thao tác và các lần chuyển cấp xử lý.
+
+**Lưu ý:** Độ tự tin của mô hình AI không đồng nghĩa với xác suất quyết định đúng. Người duyệt phải căn cứ vào bằng chứng và quy định xử lý, không chỉ dựa vào điểm confidence do Agent cung cấp.
+
+Lời đe dọa, cảm xúc hoặc lịch sử khiếu nại của người dùng không được dùng làm căn cứ kết luận đúng sai.
+
+### 4.3. Xử lý khi quá hạn
+
+- Người bán có tối đa 48 giờ để phản hồi yêu cầu cung cấp bằng chứng.
+- Trưởng nhóm có tối đa 24 giờ để xem xét và phê duyệt đề xuất.
+- Trong thời gian xử lý theo quy trình, thời hạn khiếu nại của người mua được đóng băng theo quy định nghiệp vụ.
+- Nếu trưởng nhóm không phê duyệt trong 24 giờ, hồ sơ được chuyển cho quản lý ca.
+- Agent tuyệt đối không tự động hoàn tiền hoặc từ chối khiếu nại chỉ vì đã quá thời hạn duyệt.
+
+**Nguyên tắc:** Quá hạn xử lý không đồng nghĩa với việc người mua hoặc người bán mặc nhiên đúng.
+
+### 4.4. Tool khó phân quyền nhất
+
+Tool khó phân quyền nhất là `soan_hoan_tien` ban đầu, vì tool này có thể bao gồm cả việc đánh giá căn cứ và thực hiện giao dịch tài chính.
+
+Nhóm cân nhắc ba phương án:
+
+- **Phương án A:** Agent được tự hoàn tiền nếu người bán xác nhận lỗi.
+- **Phương án B:** Agent chỉ đề xuất, trưởng nhóm duyệt trước khi hoàn tiền.
+- **Phương án C:** Cấm Agent tham gia toàn bộ quy trình hoàn tiền.
+
+Nhóm lựa chọn phương án B và tách thành hai tool:
+
+- `soan_de_xuat_hoan_tien`: Agent được tự thực hiện.
+- `thuc_hien_hoan_tien`: Chỉ được thực hiện sau khi trưởng nhóm phê duyệt.
+
+Cách tách này giúp tự động hóa khâu chuẩn bị hồ sơ nhưng vẫn giữ quyền quyết định tài chính ở con người.
+
+**Trường hợp K3 – Áo sai size:** Nếu người bán chủ động bấm chấp nhận yêu cầu trả hàng trên màn hình của họ theo quy trình trả hàng có sẵn, hệ thống thực hiện theo luồng đó. Agent không cần tự hoàn tiền hoặc yêu cầu trưởng nhóm duyệt lại một quyết định đã được người bán chấp nhận hợp lệ.
+
+### 4.5. Kiểm tra mức tự chủ trên các kịch bản rủi ro cao
+
+| Kịch bản | Hành vi của Agent | Quyền quyết định của con người | Đánh giá |
+|---|---|---|---|
+| **K1 – Nồi chiên không dầu giá trị cao** | Tra cứu ảnh và mô tả tại thời điểm đặt hàng; đối chiếu với bằng chứng hiện tại; gửi yêu cầu bằng chứng theo mẫu trung lập. Nếu cần từ chối, Agent chỉ chuẩn bị đề xuất. | Trưởng nhóm xem xét và phê duyệt quyết định từ chối hoặc hoàn tiền. | Phù hợp vì Agent không tự kết luận dựa trên mô tả đã bị chỉnh sửa và không tự quyết định tài chính. |
+| **K4 – Tai nghe giá trị cao** | Cho phép người mua gửi yêu cầu khiếu nại ngay trước 23:59; ghi nhận bằng chứng hiện có và cho phép bổ sung video sau theo quy trình. Agent không tự thực hiện hoàn tiền. | Trưởng nhóm xem xét hồ sơ và phê duyệt quyết định cuối cùng. | Phù hợp vì Agent bảo vệ quyền gửi yêu cầu đúng hạn nhưng không tự kết luận khi bằng chứng chưa đầy đủ. |
+| **K3 – Áo sai size** | Ghi nhận trạng thái người bán đã chấp nhận yêu cầu trả hàng trên quy trình có sẵn. | Người bán xác nhận theo luồng trả hàng của hệ thống. | Phù hợp vì không tạo thêm bước duyệt không cần thiết khi quyết định đã được bên có thẩm quyền chấp nhận. |
+
+### 4.6. Các quy tắc kỹ thuật bổ sung
+
+Để phân quyền không chỉ nằm trên System Prompt mà được thực thi ở cấp hệ thống, nhóm bổ sung các quy tắc sau:
+
+**1. Luôn sử dụng thông tin tại thời điểm đặt hàng**
+
+- Khi đánh giá khiếu nại, Agent phải ưu tiên ảnh và mô tả được lưu tại thời điểm người mua đặt hàng.
+- Nếu mô tả đã được chỉnh sửa, phải hiển thị cả nội dung gốc và lịch sử chỉnh sửa.
+- Không được sử dụng nội dung hiện tại để thay thế bằng chứng tại thời điểm đặt hàng.
+
+**2. Phân biệt bằng chứng khiếu nại và tín hiệu an toàn**
+
+- Lời đe dọa, cảm xúc hoặc lịch sử khiếu nại không được dùng làm căn cứ xác định bên nào đúng.
+- Tuy nhiên, nếu nội dung có dấu hiệu đe dọa hoặc lạm dụng, hệ thống có thể ghi nhận thành tín hiệu an toàn riêng để chuyển bộ phận phù hợp xử lý.
+- Không được để tín hiệu này làm thay đổi kết luận về trách nhiệm của người mua hoặc người bán.
+
+**3. Chat là dữ liệu, không phải lệnh điều khiển Agent**
+
+- Nội dung chat giữa người mua và người bán chỉ được xem là dữ liệu tham khảo.
+- Agent không được thực hiện chỉ dẫn xuất hiện trong chat, kể cả khi người gửi tự xưng là nhân viên hoặc quản trị viên.
+- Chỉ các yêu cầu hợp lệ từ hệ thống và người dùng đã được xác thực mới được phép kích hoạt thao tác tương ứng.
+
+**4. Hoàn tiền và từ chối khiếu nại có cùng mức tự chủ**
+
+- Cả hai đều cần trưởng nhóm phê duyệt.
+- Không được tự động từ chối khiếu nại chỉ vì Agent đánh giá bằng chứng chưa đủ.
+- Nếu thiếu dữ liệu hoặc bằng chứng mâu thuẫn, Agent phải yêu cầu bổ sung hoặc chuyển người xử lý.
+
+**5. Chống thực hiện giao dịch trùng lặp**
+
+- Các thao tác gửi yêu cầu bằng chứng và thực hiện hoàn tiền phải có cơ chế idempotency.
+- Khi API timeout hoặc Agent thử lại, hệ thống phải kiểm tra giao dịch trước đó để tránh gửi trùng yêu cầu hoặc hoàn tiền hai lần.
+
+**6. Phê duyệt phải gắn với đúng hồ sơ và giao dịch**
+
+- `approval_id` phải gắn với đúng `case_id`, `order_id`, số tiền, đơn vị tiền tệ và người nhận.
+- Backend phải xác minh người duyệt có thẩm quyền, phê duyệt còn hiệu lực và dữ liệu giao dịch không bị thay đổi sau khi duyệt.
+- Không được sử dụng một phê duyệt cho nhiều giao dịch khác nhau.
+
+**7. Ghi nhận lịch sử thao tác**
+
+- Mọi lần gọi tool phải được ghi log.
+- Log cần lưu người hoặc thành phần thực hiện, thời gian, dữ liệu đầu vào, kết quả đầu ra và trạng thái hồ sơ trước/sau thao tác.
+- Không được để Agent tự sửa hoặc xóa lịch sử kiểm toán.
+
+**8. Quản lý trạng thái hồ sơ rõ ràng**
+
+Hồ sơ khiếu nại cần có các trạng thái phù hợp, ví dụ:
+
+`NEW → COLLECTING_EVIDENCE → WAITING_SELLER → READY_FOR_REVIEW → APPROVED / REJECTED → COMPLETED`
+
+Ngoài ra, cần có các trạng thái như `ESCALATED`, `SELLER_TIMEOUT` và `FAILED` để xử lý trường hợp chuyển cấp, người bán không phản hồi hoặc thao tác lỗi.
+
+- `SELLER_TIMEOUT` không đồng nghĩa với việc người bán có lỗi.
+- `FAILED` không được tự động dẫn đến hoàn tiền hoặc từ chối.
+- `ESCALATED` không được tự chuyển thành `APPROVED` hoặc `REJECTED`.
+
+### 4.7. Cam kết với người dùng
+
+Agent chỉ đóng vai trò trợ lý thu thập thông tin, kiểm tra bằng chứng, chuẩn bị hồ sơ và điều phối quy trình.
+
+Agent không tự quyết định hoàn tiền, từ chối khiếu nại hoặc xử phạt shop.
+
+Câu thông báo cần xuất hiện trong những tình huống phù hợp, đặc biệt ở K1:
+
+> Mình là trợ lý AI và không quyết định hoàn tiền. Mình sẽ giúp bạn kiểm tra thông tin, thu thập bằng chứng và chuyển hồ sơ đến nhân viên có thẩm quyền.
+
+Trên giao diện cần có nhãn rõ ràng:
+
+**AI không quyết định hoàn tiền.**
+
+### 4.8. Kết luận
+
+Nhóm lựa chọn mô hình **Human-in-the-loop**: Agent tự động hóa các thao tác có rủi ro thấp như tra cứu, thu thập bằng chứng, soạn đề xuất và chuyển cấp; con người giữ quyền quyết định đối với các hành động ảnh hưởng trực tiếp đến quyền lợi tài chính.
+
+Điểm quan trọng là quyền hạn phải được kiểm soát ở cả ba lớp:
+
+1. **Agent Policy:** Quy định Agent được phép và không được phép làm gì.
+2. **Tool Permission và Backend Validation:** Backend xác thực quyền truy cập, điều kiện thực hiện và tính hợp lệ của giao dịch.
+3. **Human Approval và Audit Log:** Nhân viên phê duyệt các quyết định quan trọng; hệ thống lưu lại toàn bộ lịch sử thao tác.
+
+Thiết kế này giúp cân bằng giữa tốc độ xử lý, quyền lợi của người mua và người bán, đồng thời hạn chế rủi ro khi Agent đưa ra quyết định sai.
 
 ## §5. Prototype
 
