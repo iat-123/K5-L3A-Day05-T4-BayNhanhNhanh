@@ -99,10 +99,14 @@ Thêm:
 - Luật thêm hoặc tool tách bước (nếu có), và vì sao.
 - Một mức tự chủ đã đổi lời hứa nào với người dùng.
 
-## §5. Prototype  (chặng 5)
-- Link hoặc file · công cụ · phần nào mock · có lời gọi AI thật không.
-- 1–2 ảnh có đánh số; mỗi số: thể hiện gì · nguyên tắc HAX/PAIR nào · mức tự chủ nào.
-- Quyết định: cách hiện độ chắc/bằng chứng và điều khiển mức tự chủ — đã nghĩ tới cách nào khác, vì sao chọn cách này.
+## §5. Prototype
+
+- **File:** [prototype/index.html](prototype/index.html); hướng dẫn và ảnh ở [prototype/README.md](prototype/README.md). HTML/CSS/JS thuần, dữ liệu và phản hồi dựng sẵn, không backend/API và không gọi AI thật.
+- **Ba mức tự chủ:** ① AI chỉ hướng dẫn; ② AI soạn đề xuất, trưởng nhóm duyệt (mức nhóm chọn); ③ AI tự hoàn tiền (phương án quá tay để so sánh). Cùng ca và cùng giao diện, chỉ đổi quyền của tool hoàn tiền.
+- **Hai ca:** K1 cho thấy so sánh mô tả lúc đặt với mô tả đã sửa; K4 cho thấy tem khớp model nhưng chưa đủ bằng chứng về ANC và hạn trả hàng trong ngày. Có màn người mua và màn trưởng nhóm, log tool, nút giả lập phản hồi shop, hộp xác nhận hoàn/từ chối và đếm ngược hạn. Các thao tác đều giả lập.
+- **Ảnh:** [1 — K1, người mua ở mức ②](prototype/screen1-muc2-nguoi-mua.png); [2 — K1, trưởng nhóm duyệt sau phản hồi shop](prototype/screen2-muc2-truong-nhom.png); [3 — K4, rủi ro ở mức ③](prototype/screen3-muc3-rui-ro.png). Bảng đánh số HAX/PAIR và mức tự chủ nằm trong README prototype.
+- **Mở trạng thái demo:** thêm `#k1-2`, `#k4-3`, `#k1-1`, hoặc `#k1-2-sent-staff` vào URL. Kịch bản bấm demo khoảng 4 phút được ghi trong README prototype.
+
 
 ## §6. Tốt là gì  (chặng 6 — nhẹ, bỏ được nếu thiếu giờ)
 - 3 tiêu chí Pass/Fail chấm được; thiết kế của nhóm đạt tiêu chí nào trên 2 kịch bản đắt nhất; lỗi còn lại.
