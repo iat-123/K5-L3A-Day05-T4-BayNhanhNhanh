@@ -80,13 +80,125 @@ Nhãn: **nhẹ** (người dùng tự thấy, tự sửa) · **sửa được** 
 
 ---
 
-## §3. Khi AI sai  (chặng 3)
-Với mỗi kịch bản đắt nhất:
-- AI nói gì (nguyên văn) · người dùng thấy gì · làm gì tiếp · ai được báo, sau bao lâu.
-- Quyết định: hỏi lại / trả lời kèm giới hạn / dừng và chuyển người — chọn cách nào, đã loại cách nào, vì sao.
-- Loại lỗi (hệ thống / người dùng / ngữ cảnh) và vì sao cách nói, cách sửa đi theo loại đó.
-- 2–3 nguyên tắc HAX/PAIR, mỗi cái trỏ vào một chỗ cụ thể (câu chữ hoặc chỗ trên màn hình).
-- Lỗi nào sửa câu chữ không cứu được (nếu có), và thiết kế cứu nó thế nào.
+## §3. Khi AI sai (chặng 3)
+
+> **Mạch thiết kế chung của §3:** Ở cả hai ca đắt nhất (K1 và K4), AI không được phép "chốt đúng/sai" thay người. Thay vào đó, AI làm đúng 3 việc theo thứ tự: **(1) Đưa căn cứ ra cho hai bên tự kiểm**, **(2) Nói rõ giới hạn quyền của AI và bước tiếp theo**, **(3) Giữ hạn quyền lợi cho người mua trong lúc chờ nhân viên xử lý**.
+
+### K1 — Nồi chiên (ĐH-1002): Mô tả sản phẩm đã bị sửa sau khi bán
+
+#### 1. Bối cảnh & Quyết định phản ứng khi AI không chắc
+- **Bối cảnh (từ §2):** Khi nhận nồi chiên không dầu (ĐH-1002, 1.290.000đ), người mua đo lòng nồi chỉ được 5 lít trong khi lúc đặt hàng (01/11) trang sản phẩm ghi *"Dung tích 6 lít"*, nên họ nhắn khiếu nại hàng không đúng mô tả. Nếu AI không kiểm tra bản mô tả gắn với đơn hàng lúc đặt mà lại đi đọc trang sản phẩm **hiện tại** (vốn đã bị shop sửa ngày 10/11 thành *"lòng nồi 5 lít"*), AI sẽ thấy thông số khớp với thực tế, tưởng người mua khiếu nại sai và gọi `tu_choi_khieu_nai` → người mua mất trắng 1.290.000đ.
+- **AI chọn:** **Trả lời kèm căn cứ + nói rõ giới hạn, rồi hướng dẫn người mua tự gửi yêu cầu. AI không kết luận.**
+- **Vì sao loại 2 phương án còn lại:**
+  - *Loại "Hỏi lại":* Dữ kiện để AI **nhận diện đơn và đối chiếu mô tả** đã đủ (rõ đơn ĐH-1002 vì tài khoản chỉ có 1 đơn nồi chiên, rõ lệch 5 lít so với 6 lít). Thứ duy nhất còn thiếu để nhân viên duyệt hồ sơ là **ảnh chụp số đo lòng nồi** — thay vì chat hỏi vòng vo làm khách bực (*"cứ bị hỏi lại, không ai nói tôi còn thiếu cái gì"*), AI trả lời đối chiếu luôn và chỉ rõ họ cần đính kèm ảnh gì khi bấm gửi yêu cầu.
+  - *Loại "Dừng và chuyển người ngay":* Nếu AI dừng chat và đẩy thẳng sang hàng chờ cho nhân viên tự xử lý: (1) người mua phải chờ thụ động, không biết mình cần tự bấm gửi yêu cầu trước **13/11, 23:59** để đóng băng hạn nên rất dễ mất quyền; (2) nhân viên nhận một hồ sơ "trắng" (chưa đối chiếu 2 bản mô tả, chưa có ảnh đo) nên vẫn phải quay lại hỏi từ đầu.
+
+#### 2. Trải nghiệm người dùng & Luồng xử lý tiếp theo
+1. **Câu AI nói (nguyên văn) & ranh giới không hứa quá quyền:**
+
+> Mình đã so khiếu nại của bạn với **mô tả lúc bạn đặt hàng (01/11)**:
+> • Lúc bạn đặt: *"Dung tích **6 lít**"*.
+> • Ngày 10/11 (sau khi bạn đã đặt), shop sửa thành: *"Dung tích danh định 6 lít **(lòng nồi 5 lít)**"*.
+>
+> Như vậy, thông số dung tích đã có sự thay đổi sau thời điểm bạn đặt hàng — đây là căn cứ để sàn xem xét yêu cầu của bạn. Tuy nhiên, mình là trợ lý AI nên **không kết luận đúng/sai hay quyết định hoàn tiền**; nhân viên sàn sẽ quyết định sau khi shop phản hồi.
+>
+> **Bước tiếp theo của bạn:** Hãy gửi yêu cầu trả hàng/hoàn tiền trước **13/11, 23:59**, kèm ảnh bạn đo lòng nồi. Khi bạn gửi, nhân viên xử lý sẽ nhận được toàn bộ thông tin và ảnh bạn điền trên phiếu yêu cầu, kèm sẵn hai bản mô tả cùng mốc thời gian chỉnh sửa ở trên.
+
+- *Kiểm tra không hứa quá quyền:* AI nói rõ không kết luận đúng/sai, không quyết định hoàn tiền, không hứa sẽ tự nhắc hạn hay tự gửi đơn thay khách.
+
+2. **Người dùng thấy gì & làm gì tiếp:**
+   - **Thẻ "So sánh mô tả"** *(HAX G11 — Giải thích vì sao)*: hiển thị 2 cột *Lúc đặt (01/11)* và *Hiện tại (sửa 10/11)*, tô màu phần bị sửa, kèm dòng nguồn *"Căn cứ: ảnh lưu trang sản phẩm lúc đặt hàng"*.
+   - **Nhãn cố định:** *"AI không quyết định hoàn tiền"* (chặn kỳ vọng sai).
+   - **Đếm ngược hạn:** *"Còn 1 ngày 8 giờ để gửi yêu cầu"*.
+   - **4 nút thao tác tiếp theo (người mua tự chọn):**
+     - `[Gửi yêu cầu trả hàng]` → Mở form đã điền sẵn (kèm 2 bản mô tả) để **người mua tự kiểm tra và bấm gửi** (không tự động gửi nên tránh bấm nhầm; nếu muốn rút sau khi gửi thì dùng nút huỷ yêu cầu trên đơn).
+     - `[Thêm ảnh/video]` → Tải lên ảnh đo lòng nồi.
+     - `[Mô tả này không giống những gì tôi thấy]` *(HAX G9 — Sửa dễ dàng)* → Báo AI đã đối chiếu sai.
+     - `[Gặp nhân viên]` → Chuyển sang trao đổi trực tiếp với nhân viên.
+
+3. **Nếu người dùng không làm gì:**
+   - **12 giờ trước hạn**, app tự gửi 1 thông báo nhắc nhở *(tính năng nhắc hạn của app, không phải tool của AI)*.
+   - Quá hạn **13/11, 23:59** mà chưa gửi thì hết quyền trả hàng; AI **không** tự gửi đơn thay.
+
+4. **Ai được báo, sau bao lâu & thấy gì:**
+
+| Bên nhận | Thời điểm & Tool | Thông tin nhìn thấy |
+|---|---|---|
+| **Người bán** | Ngay khi người mua gửi · `yeu_cau_bang_chung` | Mẫu trung lập: *"Người mua báo dung tích lòng nồi 5 lít, mô tả lúc đặt ghi 6 lít. Vui lòng phản hồi trong 48 giờ."* + **đúng 2 bản mô tả** như người mua thấy. |
+| **Trưởng nhóm** | Ngay lúc đó · `chuyen_truong_nhom` | Hồ sơ gắn cờ **"Mô tả sửa sau khi bán"** (ưu tiên cao), gồm: 2 bản mô tả, ngày sửa, ảnh của người mua, phản hồi của người bán (khi có). |
+
+#### 3. Phân loại lỗi & Lỗi sửa câu chữ không cứu được
+- **Loại lỗi & cách ứng xử / cách sửa:** Đây là **Lỗi ngữ cảnh (Context Error)** — nếu hệ thống đọc "mô tả sản phẩm hiện tại" thì nó chạy *đúng thiết kế*, nhưng *sai với tình huống của người mua* vì mô tả đã đổi sau khi họ mua.
+  - *Cách nói:* Không đổ lỗi cho người mua (*"bạn đọc nhầm"*) hay người bán (*"shop gian lận"*), chỉ nêu sự thật có ngày tháng để trưởng nhóm quyết.
+  - *Cách sửa:* Phải sửa ở **thiết kế dữ liệu (§4)**, không phải câu chữ.
+- **Lỗi sửa câu chữ không cứu được (thiết kế cứu):** Câu chữ hay đến đâu cũng vô ích nếu dữ liệu AI đọc là bản đã bị sửa — AI sẽ dẫn "căn cứ" rất thuyết phục, nhưng sai. **Thiết kế cứu (§4):** thêm tool chỉ đọc `tra_cuu_don_hang`, luôn trả về **ảnh lưu mô tả lúc đặt** cùng lịch sử sửa, và AI bắt buộc hiện cả hai bản cho người dùng.
+
+---
+
+### K4 — Tai nghe (ĐH-1003): Người bán có thể đúng, hạn trả hàng sắp hết
+
+#### 1. Bối cảnh & Quyết định phản ứng khi AI không chắc
+- **Bối cảnh (từ §2):** Khi nhận tai nghe TN-300 (ĐH-1003, 890.000đ, đặt ngày 06/11), người mua đeo thử thấy không chống ồn được nên bực tức nhắn khiếu nại đòi hoàn tiền kèm ảnh tem hộp. Vấn đề là tem hộp ghi model **TN-300**, hoàn toàn **khớp** mô tả lúc đặt (*"Tai nghe TN-300, chống ồn chủ động (ANC)"*). Nếu AI chiều theo người mua đang bực mà hoàn luôn 890.000đ → oan cho người bán mất tiền và hàng dù có thể họ đúng. Ngược lại, nếu AI thấy tem khớp mà từ chối luôn → người mua mất quyền khiếu nại nếu tính năng ANC hỏng thật, vì **hạn trả hàng kết thúc vào 23:59 hôm nay** (còn ~9 giờ).
+- **AI chọn:** **Trả lời kèm giới hạn ("chưa đủ căn cứ") và xin đúng một bằng chứng cụ thể, đồng thời để người mua gửi yêu cầu ngay cho kịp hạn.**
+- **Vì sao loại 4 phương án còn lại:**
+  - *Loại "Hoàn tiền cho xong":* Tem khớp mô tả lúc đặt, chưa có bằng chứng ANC hỏng; nếu hoàn ngay thì người bán mất 890.000đ oan, hơn nữa AI không có quyền này (§4).
+  - *Loại "Từ chối luôn":* Có thể ANC hỏng thật; nếu từ chối qua 23:59 hôm nay thì người mua mất quyền khiếu nại — đây đúng là kiểu "từ chối cho chắc" mà track cảnh báo.
+  - *Loại "Chuyển người ngay":* Nếu AI dừng và đẩy thẳng sang nhân viên ngay, nhân viên chỉ nhận được một câu *"chẳng chống được gì"* nên vẫn phải quay lại xin bằng chứng; còn người mua ngồi chờ mà không biết bấm gửi yêu cầu giữ hạn trong khi chỉ còn 9 giờ.
+  - *Loại "Hỏi lại chung chung" ("bạn mô tả rõ hơn?"):* Không chỉ ra được người mua còn thiếu đúng **cái gì** để nhân viên có thể kiểm tra.
+
+#### 2. Trải nghiệm người dùng & Luồng xử lý tiếp theo
+1. **Câu AI nói (nguyên văn) & ranh giới không hứa quá quyền:**
+
+> Mình đã đối chiếu ảnh tem bạn gửi với **mô tả lúc bạn đặt hàng (06/11)**:
+> • Model trên tem là **TN-300**, khớp với mô tả *"Tai nghe TN-300, chống ồn chủ động (ANC)"*.
+> • Tuy nhiên, tính năng **chống ồn chủ động (ANC)** chưa thể kiểm tra qua ảnh chụp, nên mình **chưa đủ căn cứ** để kết luận hàng đúng hay không đúng mô tả.
+>
+> Mình là trợ lý AI nên **không kết luận đúng/sai hay quyết định hoàn tiền**; nhân viên sàn sẽ xem xét sau khi shop phản hồi.
+>
+> **Bước tiếp theo của bạn:** Vì hạn trả hàng của đơn này là **hôm nay 12/11, 23:59**, bạn hãy **gửi yêu cầu trả hàng/hoàn tiền ngay bây giờ** để giữ quyền lợi, sau đó quay và bổ sung **1 video ngắn (dưới 30 giây) lúc bật rồi tắt ANC**. Khi bạn gửi, nhân viên xử lý sẽ nhận được toàn bộ thông tin trên phiếu yêu cầu, kết quả đối chiếu tem và video bạn bổ sung.
+
+- *Kiểm tra không hứa quá quyền:* AI không hứa hoàn tiền hay tự xử thắng cho khách, không hứa tự nhắc hạn hay tự gửi đơn thay, và giữ nguyên quyền phản hồi của người bán.
+
+2. **Người dùng thấy gì & làm gì tiếp:**
+   - **Thẻ "Đối chiếu" + Nhãn độ chắc** *(HAX G2 + PAIR Explainability & Trust)*:
+     - ✔ Model TN-300: *Khớp tem hộp* · **?** Chống ồn chủ động (ANC): *Chưa kiểm được qua ảnh*.
+     - Nhãn vàng 🟡: *"Chưa đủ căn cứ — cần thêm 1 bằng chứng"* (giúp người dùng tin đúng mức, không tin tối đa).
+   - **Đếm ngược hạn màu đỏ:** *"Còn 8 giờ 59 phút"*.
+   - **3 nút thao tác tiếp theo** *(HAX G10 — Thu hẹp phạm vi khi nghi ngờ)*:
+     - `[Gửi yêu cầu ngay]` → Mở form đã điền sẵn (kèm kết quả đối chiếu tem) để **người mua tự kiểm tra và bấm gửi** trước 23:59, giữ quyền lợi ngay cả khi chưa kịp quay video (nếu muốn rút sau khi gửi thì dùng nút huỷ yêu cầu trên đơn).
+     - `[Quay video theo hướng dẫn]` → Mở hướng dẫn 3 bước trung tính (*bật ANC → bật nhạc nền → tắt ANC*) để quay video dưới 30 giây.
+     - `[Gặp nhân viên]` → Chuyển sang trao đổi trực tiếp với nhân viên.
+
+3. **Nếu người dùng không làm gì:**
+   - **Lúc 20:00** (~4 giờ trước hạn), app tự gửi 1 thông báo nhắc nhở *(tính năng nhắc hạn của app, không phải tool của AI)*.
+   - Quá **23:59 hôm nay** mà chưa gửi thì hết quyền trả hàng; AI **không** tự gửi đơn thay.
+
+4. **Ai được báo, sau bao lâu & thấy gì:**
+
+| Bên nhận | Thời điểm & Tool | Thông tin nhìn thấy |
+|---|---|---|
+| **Người bán** | Ngay khi người mua gửi yêu cầu · `yeu_cau_bang_chung` | Mẫu trung lập: *"Người mua báo chế độ chống ồn không hoạt động. Vui lòng phản hồi trong 48 giờ, có thể kèm hướng dẫn sử dụng hoặc video kiểm tra hàng trước khi gửi."* Người bán được nghe trước khi có quyết định. |
+| **Trưởng nhóm** | Sau khi người bán phản hồi, hoặc khi hết 48 giờ · `chuyen_truong_nhom` | Hồ sơ gồm: thẻ đối chiếu tem, video của người mua, phản hồi của người bán. Lời lẽ bực tức của người mua **không** được đưa vào phần căn cứ. |
+
+#### 3. Phân loại lỗi & Lỗi sửa câu chữ không cứu được
+- **Loại lỗi & cách ứng xử / cách sửa:** Ở phía đầu vào, tình huống này có thể là **Lỗi người dùng** (chưa bật ANC đúng cách) hoặc lỗi sản phẩm — AI chưa đủ dữ kiện để biết là loại nào.
+  - *Cách nói:* Không ám chỉ người mua dùng sai (*"bạn đã bật ANC chưa?"* nghe như đổ lỗi). Hướng dẫn quay video ghi 3 bước bật ANC một cách trung tính, nên nếu người mua chưa bật thì họ tự phát hiện ra mà không bị mất mặt.
+  - *Cách sửa:* Tách bước "gửi yêu cầu giữ hạn" khỏi bước "bổ sung video chứng minh", để người mua không bị mất quyền vì thiếu bằng chứng tức thời.
+- **Lỗi sửa câu chữ không cứu được (thiết kế cứu — Lỗi hệ thống nếu AI chiều khách, áp dụng cho cả K4 & K5):** Dặn AI trong prompt *"đừng chiều khách"* là sửa câu chữ, không chắc chắn. **Thiết kế cứu (§4):** tước quyền hoàn tiền khỏi AI (tách `soan_hoan_tien` thành `soan_de_xuat_hoan_tien` và `thuc_hien_hoan_tien` do trưởng nhóm duyệt), chứ không phải dặn AI *"cẩn thận hơn"*.
+
+---
+
+### Bảng tra cứu nhanh nguyên tắc HAX/PAIR (đối chiếu khi demo)
+
+| Nguyên tắc | Vị trí cụ thể trên màn hình / câu chữ | Giải quyết vấn đề gì |
+|---|---|---|
+| **G1 — Làm rõ hệ thống làm được gì** | **K1 & K4:** Câu *"Mình là trợ lý AI nên không kết luận đúng/sai hay quyết định hoàn tiền"* + phần nêu rõ AI chỉ hỗ trợ đối chiếu & gửi kèm căn cứ trên phiếu.<br>**K1:** Nhãn cố định *"AI không quyết định hoàn tiền"*. | Cho người dùng biết đang làm việc với AI, hiểu rõ AI hỗ trợ được đến đâu và **không** có quyền gì để không kỳ vọng sai. |
+| **G2 — Làm rõ nó làm tốt đến đâu (+ PAIR Explainability & Trust)** | **K4:** Nhãn độ chắc vàng 🟡 *"Chưa đủ căn cứ — cần thêm 1 bằng chứng"* + Thẻ *"Đối chiếu"* chia rõ từng ý (✔ khớp tem TN-300 · **?** ANC chưa kiểm được qua ảnh). | Làm rõ mức độ chắc chắn của AI theo từng phần, giúp người dùng **tin đúng mức** thay vì tin tuyệt đối. |
+| **G10 — Thu hẹp phạm vi khi nghi ngờ** | **K4:** Thay vì kết luận liều, AI thu hẹp phạm vi lại: trả lời kèm giới hạn, xin đúng **1** video 30s bật/tắt ANC và tách riêng nút `[Gửi yêu cầu ngay]` để giữ hạn.<br>*(K2: hỏi lại 1 câu kèm 3 đơn làm nút chọn).* | Tránh đoán mò, hoàn tiền bừa hoặc hỏi lan man khi thiếu dữ kiện; giữ cho người mua đúng bước an toàn trước mắt. |
+| **G11 — Giải thích vì sao** | **K1:** Thẻ *"So sánh mô tả"* 2 cột (tô màu chỗ sửa + dòng nguồn ảnh lưu) và câu *"Mình đã so khiếu nại của bạn với mô tả lúc bạn đặt hàng (01/11)"*.<br>**K4:** Câu *"tính năng ANC chưa thể kiểm tra qua ảnh chụp, nên mình chưa đủ căn cứ..."*. | Giải thích rõ **tại sao** AI đưa ra phản hồi và đề xuất bước tiếp theo như vậy, để người mua kiểm chứng được là AI không xử ép. |
+| **G9 — Sửa dễ dàng** | **K1:** Nút `[Mô tả này không giống những gì tôi thấy]` đặt ngay dưới thẻ *"So sánh mô tả"*. | Cho người mua một thao tác nhanh để **sửa/báo sai ngay** nếu bản mô tả hệ thống trích xuất không khớp thực tế. |
+
+---
 
 ## §4. Mức tự chủ  (chặng 4)
 Với mỗi tool:
